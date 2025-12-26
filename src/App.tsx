@@ -17,7 +17,7 @@ import {
   Sparkles,
   useTexture,
 } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
+import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
 import { MathUtils } from "three";
 import * as random from "maath/random";
@@ -26,6 +26,7 @@ import {
   FilesetResolver,
   DrawingUtils,
 } from "@mediapipe/tasks-vision";
+import snowflakeImage from "./assets/snowflake.png";
 
 // --- Dynamically generate photo list (top.jpg + 1.jpg to 8.jpg) ---
 const TOTAL_NUMBERED_PHOTOS = 8;
@@ -182,7 +183,7 @@ const PhotoOrnaments = ({
   const groupRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
 
-  const borderGeometry = useMemo(() => new THREE.PlaneGeometry(1.2, 1.5), []);
+  const borderGeometry = useMemo(() => new THREE.PlaneGeometry(1.05, 1.05), []);
   const photoGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
 
   const data = useMemo(() => {
@@ -204,7 +205,7 @@ const PhotoOrnaments = ({
       );
 
       const isBig = Math.random() < 0.2;
-      const baseScale = isBig ? 2.2 : 0.8 + Math.random() * 0.6;
+      const baseScale = isBig ? 0.5 : 0.2 + Math.random() * 0.2;
       const weight = 0.8 + Math.random() * 1.2;
       const borderColor =
         CONFIG.colors.borders[
@@ -420,7 +421,7 @@ const PhotoOrnaments = ({
           group.position.y + 0.5,
           group.position.z * 2
         );
-         group.lookAt(targetLookPos);
+        group.lookAt(targetLookPos);
 
         // Wobble effect for formed tree
         const wobbleX =
@@ -428,13 +429,13 @@ const PhotoOrnaments = ({
         const wobbleZ =
           Math.cos(time * objData.wobbleSpeed * 0.8 + objData.wobbleOffset) *
           0.05;
-         group.rotation.x += wobbleX;
-         group.rotation.z += wobbleZ;
+        group.rotation.x += wobbleX;
+        group.rotation.z += wobbleZ;
       } else {
         // Continuous rotation in CHAOS state (if not selected)
-         group.rotation.x += delta * objData.rotationSpeed.x;
-         group.rotation.y += delta * objData.rotationSpeed.y;
-         group.rotation.z += delta * objData.rotationSpeed.z;
+        group.rotation.x += delta * objData.rotationSpeed.x;
+        group.rotation.y += delta * objData.rotationSpeed.y;
+        group.rotation.z += delta * objData.rotationSpeed.z;
       }
     });
   });
@@ -450,54 +451,54 @@ const PhotoOrnaments = ({
             rotation={state === "CHAOS" ? obj.chaosRotation : [0, 0, 0]}
           >
             {/* Front side */}
-          <group position={[0, 0, 0.015]}>
+            <group position={[0, 0, 0.015]}>
               <mesh
                 geometry={photoGeometry}
                 castShadow={isSelected}
                 receiveShadow={isSelected}
               >
-              <meshStandardMaterial
-                map={textures[obj.textureIndex]}
+                <meshStandardMaterial
+                  map={textures[obj.textureIndex]}
                   roughness={isSelected ? 0.3 : 0.5}
                   metalness={isSelected ? 0.1 : 0}
                   emissive={CONFIG.colors.white}
                   emissiveMap={textures[obj.textureIndex]}
-                  emissiveIntensity={isSelected ? 1.5 : 1.0}
-                side={THREE.FrontSide}
-              />
-            </mesh>
-            <mesh geometry={borderGeometry} position={[0, -0.15, -0.01]}>
+                  emissiveIntensity={isSelected ? 0.3 : 0.1}
+                  side={THREE.FrontSide}
+                />
+              </mesh>
+              <mesh geometry={borderGeometry} position={[0, 0, -0.01]}>
                 <meshStandardMaterial
                   color={obj.borderColor}
                   roughness={0.9}
                   metalness={0}
                   side={THREE.FrontSide}
                 />
-            </mesh>
-          </group>
+              </mesh>
+            </group>
             {/* Back side */}
-          <group position={[0, 0, -0.015]} rotation={[0, Math.PI, 0]}>
-            <mesh geometry={photoGeometry}>
-              <meshStandardMaterial
-                map={textures[obj.textureIndex]}
+            <group position={[0, 0, -0.015]} rotation={[0, Math.PI, 0]}>
+              <mesh geometry={photoGeometry}>
+                <meshStandardMaterial
+                  map={textures[obj.textureIndex]}
                   roughness={0.5}
                   metalness={0}
                   emissive={CONFIG.colors.white}
                   emissiveMap={textures[obj.textureIndex]}
-                  emissiveIntensity={1.0}
-                side={THREE.FrontSide}
-              />
-            </mesh>
-            <mesh geometry={borderGeometry} position={[0, -0.15, -0.01]}>
+                  emissiveIntensity={0.1}
+                  side={THREE.FrontSide}
+                />
+              </mesh>
+              <mesh geometry={borderGeometry} position={[0, 0, -0.01]}>
                 <meshStandardMaterial
                   color={obj.borderColor}
                   roughness={0.9}
                   metalness={0}
                   side={THREE.FrontSide}
                 />
-            </mesh>
+              </mesh>
+            </group>
           </group>
-        </group>
         );
       })}
     </group>
@@ -550,6 +551,39 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
     geo.translate(0, -0.35, 0);
     return geo;
   }, []);
+  // Wreath geometry (torus with decorations)
+  const wreathTorusGeometry = useMemo(
+    () => new THREE.TorusGeometry(0.6, 0.15, 8, 16),
+    []
+  );
+  const wreathBerryGeometry = useMemo(
+    () => new THREE.SphereGeometry(0.08, 8, 8),
+    []
+  );
+  // Gift box with ribbon
+  const giftRibbonVerticalGeometry = useMemo(
+    () => new THREE.BoxGeometry(0.08, 0.85, 0.08),
+    []
+  );
+  const giftRibbonHorizontalGeometry = useMemo(
+    () => new THREE.BoxGeometry(0.85, 0.08, 0.08),
+    []
+  );
+  // Bow loop geometry (larger loops)
+  const giftBowLoopGeometry = useMemo(
+    () => new THREE.TorusGeometry(0.2, 0.06, 12, 24),
+    []
+  );
+  // Bow center knot
+  const giftBowKnotGeometry = useMemo(
+    () => new THREE.SphereGeometry(0.12, 12, 12),
+    []
+  );
+  // Bow tails (streamers)
+  const giftBowTailGeometry = useMemo(
+    () => new THREE.BoxGeometry(0.06, 0.4, 0.06),
+    []
+  );
 
   const data = useMemo(() => {
     return new Array(count).fill(0).map(() => {
@@ -570,12 +604,12 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
         currentRadius * Math.sin(theta)
       );
 
-      // More decoration types: 0=box, 1=sphere, 2=cane, 3=star, 4=bell
-      const type = Math.floor(Math.random() * 5);
+      // More decoration types: 0=box, 1=sphere, 2=cane, 3=star, 4=bell, 5=gift, 6=wreath
+      const type = Math.floor(Math.random() * 7);
       let color;
       let scale = 1;
       if (type === 0) {
-        // Gift box
+        // Simple box
         color =
           CONFIG.colors.giftColors[
             Math.floor(Math.random() * CONFIG.colors.giftColors.length)
@@ -596,10 +630,21 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
         // Star
         color = CONFIG.colors.gold;
         scale = 0.5 + Math.random() * 0.3;
-      } else {
+      } else if (type === 4) {
         // Bell
         color = CONFIG.colors.gold;
         scale = 0.6 + Math.random() * 0.3;
+      } else if (type === 5) {
+        // Gift box with ribbon
+        color =
+          CONFIG.colors.giftColors[
+            Math.floor(Math.random() * CONFIG.colors.giftColors.length)
+          ];
+        scale = 0.8 + Math.random() * 0.4;
+      } else {
+        // Wreath
+        color = CONFIG.colors.green;
+        scale = 0.7 + Math.random() * 0.4;
       }
 
       const rotationSpeed = {
@@ -629,20 +674,35 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
     starGeometry,
     bellConeGeometry,
     bellSphereGeometry,
+    wreathTorusGeometry,
+    wreathBerryGeometry,
+    giftRibbonVerticalGeometry,
+    giftRibbonHorizontalGeometry,
+    giftBowLoopGeometry,
+    giftBowKnotGeometry,
+    giftBowTailGeometry,
   ]);
 
   useFrame((_, delta) => {
     if (!groupRef.current) return;
     const isFormed = state === "FORMED";
     groupRef.current.children.forEach((child, i) => {
-      const mesh = child as THREE.Mesh;
       const objData = data[i];
       const target = isFormed ? objData.targetPos : objData.chaosPos;
       objData.currentPos.lerp(target, delta * 1.5);
-      mesh.position.copy(objData.currentPos);
-      mesh.rotation.x += delta * objData.rotationSpeed.x;
-      mesh.rotation.y += delta * objData.rotationSpeed.y;
-      mesh.rotation.z += delta * objData.rotationSpeed.z;
+      // Handle both groups and meshes
+      if (child instanceof THREE.Group) {
+        child.position.copy(objData.currentPos);
+        child.rotation.x += delta * objData.rotationSpeed.x;
+        child.rotation.y += delta * objData.rotationSpeed.y;
+        child.rotation.z += delta * objData.rotationSpeed.z;
+      } else {
+        const mesh = child as THREE.Mesh;
+        mesh.position.copy(objData.currentPos);
+        mesh.rotation.x += delta * objData.rotationSpeed.x;
+        mesh.rotation.y += delta * objData.rotationSpeed.y;
+        mesh.rotation.z += delta * objData.rotationSpeed.z;
+      }
     });
   });
 
@@ -691,6 +751,166 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
                   metalness={0.5}
                 />
               </mesh>
+            </group>
+          );
+        } else if (obj.type === 5) {
+          // Gift box with ribbon - improved version
+          const ribbonColor = CONFIG.colors.gold;
+          return (
+            <group
+              key={i}
+              scale={[obj.scale, obj.scale, obj.scale]}
+              rotation={obj.chaosRotation}
+            >
+              {/* Gift box - slightly rounded appearance with better material */}
+              <mesh geometry={boxGeometry}>
+                <meshStandardMaterial
+                  color={obj.color}
+                  roughness={0.2}
+                  metalness={0.3}
+                  emissive={obj.color}
+                  emissiveIntensity={0.15}
+                />
+              </mesh>
+
+              {/* Vertical ribbon strip */}
+              <mesh geometry={giftRibbonVerticalGeometry}>
+                <meshStandardMaterial
+                  color={ribbonColor}
+                  roughness={0.15}
+                  metalness={0.7}
+                  emissive={ribbonColor}
+                  emissiveIntensity={0.4}
+                />
+              </mesh>
+
+              {/* Horizontal ribbon strip */}
+              <mesh geometry={giftRibbonHorizontalGeometry}>
+                <meshStandardMaterial
+                  color={ribbonColor}
+                  roughness={0.15}
+                  metalness={0.7}
+                  emissive={ribbonColor}
+                  emissiveIntensity={0.4}
+                />
+              </mesh>
+
+              {/* Detailed bow on top */}
+              <group position={[0, 0.45, 0]}>
+                {/* Left bow loop */}
+                <mesh
+                  geometry={giftBowLoopGeometry}
+                  position={[-0.15, 0, 0]}
+                  rotation={[Math.PI / 2, 0, -Math.PI / 6]}
+                >
+                  <meshStandardMaterial
+                    color={ribbonColor}
+                    roughness={0.1}
+                    metalness={0.8}
+                    emissive={ribbonColor}
+                    emissiveIntensity={0.5}
+                  />
+                </mesh>
+
+                {/* Right bow loop */}
+                <mesh
+                  geometry={giftBowLoopGeometry}
+                  position={[0.15, 0, 0]}
+                  rotation={[Math.PI / 2, 0, Math.PI / 6]}
+                >
+                  <meshStandardMaterial
+                    color={ribbonColor}
+                    roughness={0.1}
+                    metalness={0.8}
+                    emissive={ribbonColor}
+                    emissiveIntensity={0.5}
+                  />
+                </mesh>
+
+                {/* Center knot */}
+                <mesh geometry={giftBowKnotGeometry} position={[0, 0, 0]}>
+                  <meshStandardMaterial
+                    color={ribbonColor}
+                    roughness={0.1}
+                    metalness={0.8}
+                    emissive={ribbonColor}
+                    emissiveIntensity={0.6}
+                  />
+                </mesh>
+
+                {/* Bow tail/streamer - left */}
+                <mesh
+                  geometry={giftBowTailGeometry}
+                  position={[-0.25, -0.25, 0]}
+                  rotation={[0, 0, -Math.PI / 6]}
+                >
+                  <meshStandardMaterial
+                    color={ribbonColor}
+                    roughness={0.15}
+                    metalness={0.7}
+                    emissive={ribbonColor}
+                    emissiveIntensity={0.4}
+                  />
+                </mesh>
+
+                {/* Bow tail/streamer - right */}
+                <mesh
+                  geometry={giftBowTailGeometry}
+                  position={[0.25, -0.25, 0]}
+                  rotation={[0, 0, Math.PI / 6]}
+                >
+                  <meshStandardMaterial
+                    color={ribbonColor}
+                    roughness={0.15}
+                    metalness={0.7}
+                    emissive={ribbonColor}
+                    emissiveIntensity={0.4}
+                  />
+                </mesh>
+              </group>
+            </group>
+          );
+        } else if (obj.type === 6) {
+          // Wreath decoration
+          const berryCount = 6;
+          return (
+            <group
+              key={i}
+              scale={[obj.scale, obj.scale, obj.scale]}
+              rotation={obj.chaosRotation}
+            >
+              {/* Wreath base (torus) */}
+              <mesh geometry={wreathTorusGeometry}>
+                <meshStandardMaterial
+                  color={obj.color}
+                  roughness={0.7}
+                  metalness={0.1}
+                />
+              </mesh>
+              {/* Berries around the wreath */}
+              {Array.from({ length: berryCount }).map((_, berryIdx) => {
+                const angle = (berryIdx / berryCount) * Math.PI * 2;
+                const radius = 0.6;
+                return (
+                  <mesh
+                    key={berryIdx}
+                    geometry={wreathBerryGeometry}
+                    position={[
+                      Math.cos(angle) * radius,
+                      Math.sin(angle) * radius,
+                      0,
+                    ]}
+                  >
+                    <meshStandardMaterial
+                      color={CONFIG.colors.red}
+                      roughness={0.3}
+                      metalness={0.2}
+                      emissive={CONFIG.colors.red}
+                      emissiveIntensity={0.5}
+                    />
+                  </mesh>
+                );
+              })}
             </group>
           );
         } else {
@@ -795,6 +1015,138 @@ const FairyLights = ({ state }: { state: "CHAOS" | "FORMED" }) => {
   );
 };
 
+// --- Component: Snow Effect ---
+const Snow = () => {
+  const count = 800;
+  const groupRef = useRef<THREE.Group>(null);
+  const cameraRef = useRef<THREE.Camera | null>(null);
+  const [snowOpacity, setSnowOpacity] = useState(0);
+  const startTimeRef = useRef<number | null>(null);
+
+  // Load snowflake texture
+  const snowflakeTexture = useTexture(snowflakeImage);
+
+  // Create plane geometry for sprite
+  const planeGeometry = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
+
+  // Configure texture
+  useEffect(() => {
+    if (snowflakeTexture) {
+      snowflakeTexture.flipY = false;
+      snowflakeTexture.needsUpdate = true;
+    }
+  }, [snowflakeTexture]);
+
+  // Delay snow appearance
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTimeRef.current = Date.now();
+    }, 2000); // 2 second delay before snow starts
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const data = useMemo(() => {
+    return new Array(count).fill(0).map(() => {
+      return {
+        position: new THREE.Vector3(
+          (Math.random() - 0.5) * 200,
+          Math.random() * 100 + 50,
+          (Math.random() - 0.5) * 200
+        ),
+        velocity: Math.random() * 0.5 + 0.3,
+        rotationSpeed: {
+          z: (Math.random() - 0.5) * 3, // Rotate around Z axis
+        },
+        rotation: Math.random() * Math.PI * 2,
+        size: Math.random() * 0.8 + 0.4, // Varied sizes
+      };
+    });
+  }, []);
+
+  useFrame((state, delta) => {
+    if (!groupRef.current) return;
+    if (!cameraRef.current) {
+      cameraRef.current = state.camera;
+    }
+
+    // Gradually fade in snow after delay
+    if (startTimeRef.current !== null) {
+      const elapsed = (Date.now() - startTimeRef.current) / 1000; // seconds
+      const fadeDuration = 2; // 2 seconds to fade in
+      const newOpacity = Math.min(0.9, (elapsed / fadeDuration) * 0.9);
+      if (newOpacity !== snowOpacity) {
+        setSnowOpacity(newOpacity);
+      }
+    }
+
+    groupRef.current.children.forEach((child, i) => {
+      const objData = data[i];
+      const mesh = child as THREE.Mesh;
+
+      // Only animate if snow has started
+      if (startTimeRef.current !== null) {
+        // Move snowflake down
+        objData.position.y -= objData.velocity * delta * 10;
+
+        // Add slight horizontal drift (swaying motion)
+        objData.position.x += Math.sin(objData.position.y * 0.01) * delta * 2;
+        objData.position.z += Math.cos(objData.position.y * 0.01) * delta * 2;
+
+        // Rotate snowflake around Z axis
+        objData.rotation += objData.rotationSpeed.z * delta;
+
+        // Update mesh position
+        mesh.position.copy(objData.position);
+
+        // Make snowflake always face camera (billboard effect)
+        if (cameraRef.current) {
+          mesh.lookAt(cameraRef.current.position);
+          // Rotate around its own Z axis for spinning effect
+          mesh.rotateZ(objData.rotation);
+        }
+
+        // Reset if below ground
+        if (objData.position.y < -50) {
+          objData.position.set(
+            (Math.random() - 0.5) * 200,
+            100,
+            (Math.random() - 0.5) * 200
+          );
+        }
+      }
+
+      // Update material opacity
+      if (mesh.material) {
+        (mesh.material as THREE.MeshStandardMaterial).opacity = snowOpacity;
+      }
+    });
+  });
+
+  return (
+    <group ref={groupRef}>
+      {data.map((obj, i) => (
+        <mesh
+          key={i}
+          geometry={planeGeometry}
+          scale={[obj.size, obj.size, obj.size]}
+          position={obj.position}
+        >
+          <meshStandardMaterial
+            map={snowflakeTexture}
+            transparent
+            opacity={snowOpacity}
+            side={THREE.DoubleSide}
+            emissive="#ffffff"
+            emissiveIntensity={0.3}
+            alphaTest={0.1}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+};
+
 // --- Component: Top Star (No Photo, Pure Gold 3D Star) ---
 const TopStar = ({ state }: { state: "CHAOS" | "FORMED" }) => {
   const groupRef = useRef<THREE.Group>(null);
@@ -829,11 +1181,11 @@ const TopStar = ({ state }: { state: "CHAOS" | "FORMED" }) => {
   const goldMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-    color: CONFIG.colors.gold,
-    emissive: CONFIG.colors.gold,
+        color: CONFIG.colors.gold,
+        emissive: CONFIG.colors.gold,
         emissiveIntensity: 1.5, // Moderate brightness, both glowing and textured
-    roughness: 0.1,
-    metalness: 1.0,
+        roughness: 0.1,
+        metalness: 1.0,
       }),
     []
   );
@@ -971,7 +1323,9 @@ const Experience = ({
         maxPolarAngle={Math.PI / 1.7}
       />
 
-      <color attach="background" args={["#000300"]} />
+      {/* Pure black background */}
+      <color attach="background" args={["#000000"]} />
+      <fog attach="fog" args={["#000000", 30, 150]} />
       <Stars
         radius={100}
         depth={50}
@@ -982,6 +1336,9 @@ const Experience = ({
         speed={1}
       />
       <Environment preset="night" background={false} />
+
+      {/* Snow effect */}
+      <Snow />
 
       <ambientLight intensity={0.4} color="#003311" />
       <pointLight
@@ -1005,9 +1362,9 @@ const Experience = ({
               selectedPhotoIndex={selectedPhotoIndex}
             />
           </group>
-           <ChristmasElements state={sceneState} />
-           <FairyLights state={sceneState} />
-           <TopStar state={sceneState} />
+          <ChristmasElements state={sceneState} />
+          <FairyLights state={sceneState} />
+          <TopStar state={sceneState} />
         </Suspense>
         <Sparkles
           count={600}
@@ -1027,7 +1384,6 @@ const Experience = ({
           radius={0.5}
           mipmapBlur
         />
-        <Vignette eskil={false} offset={0.1} darkness={1.2} />
       </EffectComposer>
     </>
   );
@@ -1078,7 +1434,7 @@ const GestureController = ({
             predictWebcam();
           }
         } else {
-            onStatus("ERROR: CAMERA PERMISSION DENIED");
+          onStatus("ERROR: CAMERA PERMISSION DENIED");
         }
       } catch (err: any) {
         onStatus(`ERROR: ${err.message || "MODEL FAILED"}`);
@@ -1092,8 +1448,8 @@ const GestureController = ({
             videoRef.current,
             Date.now()
           );
-            const ctx = canvasRef.current.getContext("2d");
-            if (ctx && debugMode) {
+          const ctx = canvasRef.current.getContext("2d");
+          if (ctx && debugMode) {
             ctx.clearRect(
               0,
               0,
@@ -1104,7 +1460,7 @@ const GestureController = ({
             canvasRef.current.height = videoRef.current.videoHeight;
             if (results.landmarks)
               for (const landmarks of results.landmarks) {
-                        const drawingUtils = new DrawingUtils(ctx);
+                const drawingUtils = new DrawingUtils(ctx);
                 drawingUtils.drawConnectors(
                   landmarks,
                   GestureRecognizer.HAND_CONNECTIONS,
@@ -1124,26 +1480,29 @@ const GestureController = ({
             );
 
           // Handle gesture recognition
-            if (results.gestures.length > 0) {
+          let currentGesture: string | null = null;
+          if (results.gestures.length > 0) {
             const name = results.gestures[0][0].categoryName;
             const score = results.gestures[0][0].score;
-              if (score > 0.4) {
+            if (score > 0.4) {
+              currentGesture = name;
               if (name === "Open_Palm") onGesture("CHAOS");
               if (name === "Closed_Fist") onGesture("FORMED");
-                 if (debugMode) onStatus(`DETECTED: ${name}`);
-              }
+              if (debugMode) onStatus(`DETECTED: ${name}`);
+            }
           }
 
-          // Always check landmarks for pinch detection (even if no gesture detected)
-              if (results.landmarks.length > 0) {
+          // Always check landmarks for hand movement and pinch detection
+          if (results.landmarks.length > 0) {
             const landmarks = results.landmarks[0];
 
-            // Handle hand movement for rotation
+            // Handle hand movement for rotation (always works)
             const speed = (0.5 - landmarks[0].x) * 0.15;
-                onMove(Math.abs(speed) > 0.01 ? speed : 0);
+            onMove(Math.abs(speed) > 0.01 ? speed : 0);
 
             // Detect pinch gesture (thumb tip and index finger tip close together)
-            if (landmarks.length >= 9) {
+            // BUT skip pinch detection if current gesture is Open_Palm
+            if (landmarks.length >= 9 && currentGesture !== "Open_Palm") {
               const thumbTip = landmarks[4]; // Thumb tip
               const indexTip = landmarks[8]; // Index finger tip
 
@@ -1348,74 +1707,6 @@ export default function GrandTreeApp() {
         onPinchEnd={handlePinchEnd}
         debugMode={debugMode}
       />
-
-      {/* UI - Stats */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: "30px",
-          left: "40px",
-          color: "#888",
-          zIndex: 10,
-          fontFamily: "sans-serif",
-          userSelect: "none",
-        }}
-      >
-        <div style={{ marginBottom: "15px" }}>
-          <p
-            style={{
-              fontSize: "10px",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              marginBottom: "4px",
-            }}
-          >
-            Memories
-          </p>
-          <p
-            style={{
-              fontSize: "24px",
-              color: "#FFD700",
-              fontWeight: "bold",
-              margin: 0,
-            }}
-          >
-            {CONFIG.counts.ornaments.toLocaleString()}{" "}
-            <span
-              style={{ fontSize: "10px", color: "#555", fontWeight: "normal" }}
-            >
-              POLAROIDS
-            </span>
-          </p>
-        </div>
-        <div>
-          <p
-            style={{
-              fontSize: "10px",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              marginBottom: "4px",
-            }}
-          >
-            Foliage
-          </p>
-          <p
-            style={{
-              fontSize: "24px",
-              color: "#004225",
-              fontWeight: "bold",
-              margin: 0,
-            }}
-          >
-            {(CONFIG.counts.foliage / 1000).toFixed(0)}K{" "}
-            <span
-              style={{ fontSize: "10px", color: "#555", fontWeight: "normal" }}
-            >
-              EMERALD NEEDLES
-            </span>
-          </p>
-        </div>
-      </div>
 
       {/* UI - Buttons */}
       <div
