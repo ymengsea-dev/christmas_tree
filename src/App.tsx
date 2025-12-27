@@ -66,13 +66,13 @@ const CONFIG = {
     candyColors: ["#FF0000", "#FFFFFF"],
   },
   counts: {
-    foliage: 15000,
-    ornaments: 72, // Number of polaroid photos (8 photos * 9 for more coverage)
-    elements: 200, // Number of Christmas elements
-    lights: 400, // Number of fairy lights
-    models: 60, // Number of 3D model ornaments
+    foliage: 7000,
+    ornaments: 52, // Number of polaroid photos (8 photos * 9 for more coverage)
+    elements: 150, // Number of Christmas elements
+    lights: 250, // Number of fairy lights
+    models: 40, // Number of 3D model ornaments
   },
-  tree: { height: 22, radius: 9 }, // Tree dimensions
+  tree: { height: 28, radius: 9 }, // Tree dimensions
   photos: {
     // top property no longer needed, as it has been moved into body
     body: bodyPhotoPaths,
@@ -1055,7 +1055,7 @@ const FairyLights = ({ state }: { state: "CHAOS" | "FORMED" }) => {
 
 // --- Component: Snow Effect ---
 const Snow = () => {
-  const count = 800;
+  const count = 300; // Reduced snowflake count for better performance
   const groupRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.Camera | null>(null);
   const [snowOpacity, setSnowOpacity] = useState(0);
