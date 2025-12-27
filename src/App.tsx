@@ -16,6 +16,7 @@ import {
   Stars,
   Sparkles,
   useTexture,
+  useGLTF,
 } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import * as THREE from "three";
@@ -69,6 +70,7 @@ const CONFIG = {
     ornaments: 72, // Number of polaroid photos (8 photos * 9 for more coverage)
     elements: 200, // Number of Christmas elements
     lights: 400, // Number of fairy lights
+    models: 60, // Number of 3D model ornaments
   },
   tree: { height: 22, radius: 9 }, // Tree dimensions
   photos: {
@@ -205,7 +207,7 @@ const PhotoOrnaments = ({
       );
 
       const isBig = Math.random() < 0.2;
-      const baseScale = isBig ? 0.5 : 0.2 + Math.random() * 0.2;
+      const baseScale = isBig ? 1.0 : 0.5 + Math.random() * 0.5;
       const weight = 0.8 + Math.random() * 1.2;
       const borderColor =
         CONFIG.colors.borders[
@@ -604,8 +606,8 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
         currentRadius * Math.sin(theta)
       );
 
-      // More decoration types: 0=box, 1=sphere, 2=cane, 3=star, 4=bell, 5=gift, 6=wreath
-      const type = Math.floor(Math.random() * 7);
+      // More decoration types: 0=box, 1=sphere, 2=cane, 3=star, 4=bell, 5=wreath (removed gift type 5)
+      const type = Math.floor(Math.random() * 6);
       let color;
       let scale = 1;
       if (type === 0) {
@@ -634,15 +636,8 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
         // Bell
         color = CONFIG.colors.gold;
         scale = 0.6 + Math.random() * 0.3;
-      } else if (type === 5) {
-        // Gift box with ribbon
-        color =
-          CONFIG.colors.giftColors[
-            Math.floor(Math.random() * CONFIG.colors.giftColors.length)
-          ];
-        scale = 0.8 + Math.random() * 0.4;
       } else {
-        // Wreath
+        // Wreath (type 5, was type 6)
         color = CONFIG.colors.green;
         scale = 0.7 + Math.random() * 0.4;
       }
@@ -754,123 +749,6 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
             </group>
           );
         } else if (obj.type === 5) {
-          // Gift box with ribbon - improved version
-          const ribbonColor = CONFIG.colors.gold;
-          return (
-            <group
-              key={i}
-              scale={[obj.scale, obj.scale, obj.scale]}
-              rotation={obj.chaosRotation}
-            >
-              {/* Gift box - slightly rounded appearance with better material */}
-              <mesh geometry={boxGeometry}>
-                <meshStandardMaterial
-                  color={obj.color}
-                  roughness={0.2}
-                  metalness={0.3}
-                  emissive={obj.color}
-                  emissiveIntensity={0.15}
-                />
-              </mesh>
-
-              {/* Vertical ribbon strip */}
-              <mesh geometry={giftRibbonVerticalGeometry}>
-                <meshStandardMaterial
-                  color={ribbonColor}
-                  roughness={0.15}
-                  metalness={0.7}
-                  emissive={ribbonColor}
-                  emissiveIntensity={0.4}
-                />
-              </mesh>
-
-              {/* Horizontal ribbon strip */}
-              <mesh geometry={giftRibbonHorizontalGeometry}>
-                <meshStandardMaterial
-                  color={ribbonColor}
-                  roughness={0.15}
-                  metalness={0.7}
-                  emissive={ribbonColor}
-                  emissiveIntensity={0.4}
-                />
-              </mesh>
-
-              {/* Detailed bow on top */}
-              <group position={[0, 0.45, 0]}>
-                {/* Left bow loop */}
-                <mesh
-                  geometry={giftBowLoopGeometry}
-                  position={[-0.15, 0, 0]}
-                  rotation={[Math.PI / 2, 0, -Math.PI / 6]}
-                >
-                  <meshStandardMaterial
-                    color={ribbonColor}
-                    roughness={0.1}
-                    metalness={0.8}
-                    emissive={ribbonColor}
-                    emissiveIntensity={0.5}
-                  />
-                </mesh>
-
-                {/* Right bow loop */}
-                <mesh
-                  geometry={giftBowLoopGeometry}
-                  position={[0.15, 0, 0]}
-                  rotation={[Math.PI / 2, 0, Math.PI / 6]}
-                >
-                  <meshStandardMaterial
-                    color={ribbonColor}
-                    roughness={0.1}
-                    metalness={0.8}
-                    emissive={ribbonColor}
-                    emissiveIntensity={0.5}
-                  />
-                </mesh>
-
-                {/* Center knot */}
-                <mesh geometry={giftBowKnotGeometry} position={[0, 0, 0]}>
-                  <meshStandardMaterial
-                    color={ribbonColor}
-                    roughness={0.1}
-                    metalness={0.8}
-                    emissive={ribbonColor}
-                    emissiveIntensity={0.6}
-                  />
-                </mesh>
-
-                {/* Bow tail/streamer - left */}
-                <mesh
-                  geometry={giftBowTailGeometry}
-                  position={[-0.25, -0.25, 0]}
-                  rotation={[0, 0, -Math.PI / 6]}
-                >
-                  <meshStandardMaterial
-                    color={ribbonColor}
-                    roughness={0.15}
-                    metalness={0.7}
-                    emissive={ribbonColor}
-                    emissiveIntensity={0.4}
-                  />
-                </mesh>
-
-                {/* Bow tail/streamer - right */}
-                <mesh
-                  geometry={giftBowTailGeometry}
-                  position={[0.25, -0.25, 0]}
-                  rotation={[0, 0, Math.PI / 6]}
-                >
-                  <meshStandardMaterial
-                    color={ribbonColor}
-                    roughness={0.15}
-                    metalness={0.7}
-                    emissive={ribbonColor}
-                    emissiveIntensity={0.4}
-                  />
-                </mesh>
-              </group>
-            </group>
-          );
-        } else if (obj.type === 6) {
           // Wreath decoration
           const berryCount = 6;
           return (
@@ -936,6 +814,166 @@ const ChristmasElements = ({ state }: { state: "CHAOS" | "FORMED" }) => {
             </mesh>
           );
         }
+      })}
+    </group>
+  );
+};
+
+// --- Component: 3D Model Ornaments ---
+const ModelOrnaments = ({ state }: { state: "CHAOS" | "FORMED" }) => {
+  const count = CONFIG.counts.models;
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Load all models separately (hooks must be called unconditionally)
+  const candyCane = useGLTF("/3dmodel/candycane.glb");
+  const christmasBall1 = useGLTF("/3dmodel/christmasball1.glb");
+  const christmasBall2 = useGLTF("/3dmodel/christmasball2.glb");
+  const christmasSock = useGLTF("/3dmodel/christmassock.glb");
+  const giftbox1 = useGLTF("/3dmodel/giftbox1.glb");
+  const giftbox2 = useGLTF("/3dmodel/giftbox2.glb");
+  const giftbox3 = useGLTF("/3dmodel/giftbox3.glb");
+  const giftbox4 = useGLTF("/3dmodel/giftbox4.glb");
+  const christmasBall3 = useGLTF("/3dmodel/christmasball3.glb");
+  const christmasBall4 = useGLTF("/3dmodel/christmasball4.glb");
+  const christmasCard = useGLTF("/3dmodel/christmascard.glb");
+  const christmasWreath = useGLTF("/3dmodel/christmaswreath.glb");
+
+  // Array of all loaded models
+  const models = useMemo(
+    () => [
+      candyCane,
+      christmasBall1,
+      christmasBall2,
+      christmasSock,
+      giftbox1,
+      giftbox2,
+      giftbox3,
+      giftbox4,
+      christmasBall3,
+      christmasBall4,
+      christmasCard,
+      christmasWreath,
+    ],
+    [
+      candyCane,
+      christmasBall1,
+      christmasBall2,
+      christmasSock,
+      giftbox1,
+      giftbox2,
+      giftbox3,
+      giftbox4,
+      christmasBall3,
+      christmasBall4,
+      christmasCard,
+      christmasWreath,
+    ]
+  );
+
+  const data = useMemo(() => {
+    return new Array(count).fill(0).map((_, i) => {
+      const chaosPos = new THREE.Vector3(
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60,
+        (Math.random() - 0.5) * 60
+      );
+      const h = CONFIG.tree.height;
+      const y = Math.random() * h - h / 2;
+      const rBase = CONFIG.tree.radius;
+      const currentRadius = rBase * (1 - (y + h / 2) / h) * 0.9;
+      const theta = Math.random() * Math.PI * 2;
+
+      const targetPos = new THREE.Vector3(
+        currentRadius * Math.cos(theta),
+        y,
+        currentRadius * Math.sin(theta)
+      );
+
+      // Cycle through all models (like photos do) - each appears 7-8 times
+      const modelIndex = i % models.length;
+      // Individual scale for each model type to ensure all are visible
+      // Index: 0=candyCane, 1=christmasBall1, 2=christmasBall2, 3=christmasSock,
+      //        4=giftbox1, 5=giftbox2, 6=giftbox3, 7=giftbox4,
+      //        8=christmasBall3, 9=christmasBall4, 10=christmasCard, 11=christmasWreath
+      const scaleMap = [
+        2.5, // candyCane - larger scale
+        0.3, // christmasBall1 - larger scale
+        0.7, // christmasBall2 - larger scale
+        1.9, // christmasSock - larger scale
+        0.008, // giftbox1 - much smaller (50x bigger in file)
+        0.05, // giftbox2 - larger scale
+        0.7, // giftbox3 - larger scale
+        0.8, // giftbox4 - larger scale
+        0.8, // christmasBall3
+        0.8, // christmasBall4
+        0.9, // christmasCard
+        1.3, // christmasWreath
+      ];
+      const baseScale = scaleMap[modelIndex];
+      const scale = baseScale + Math.random() * (baseScale * 0.1); // 10% variation
+      // Random rotation speed
+      const rotationSpeed = {
+        x: (Math.random() - 0.5) * 1.5,
+        y: (Math.random() - 0.5) * 1.5,
+        z: (Math.random() - 0.5) * 1.5,
+      };
+
+      return {
+        modelIndex,
+        chaosPos,
+        targetPos,
+        scale,
+        currentPos: chaosPos.clone(),
+        chaosRotation: new THREE.Euler(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
+        ),
+        rotationSpeed,
+      };
+    });
+  }, [models.length, count]);
+
+  // Create cloned models for each instance
+  const clonedModels = useMemo(() => {
+    if (!models || models.length === 0 || !data || data.length === 0) return [];
+    return data.map((obj) => {
+      if (models[obj.modelIndex] && models[obj.modelIndex].scene) {
+        return models[obj.modelIndex].scene.clone();
+      }
+      return null;
+    });
+  }, [data, models]);
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const isFormed = state === "FORMED";
+    groupRef.current.children.forEach((child, i) => {
+      const objData = data[i];
+      const target = isFormed ? objData.targetPos : objData.chaosPos;
+      objData.currentPos.lerp(target, delta * 1.5);
+
+      if (child instanceof THREE.Group) {
+        child.position.copy(objData.currentPos);
+        child.rotation.x += delta * objData.rotationSpeed.x;
+        child.rotation.y += delta * objData.rotationSpeed.y;
+        child.rotation.z += delta * objData.rotationSpeed.z;
+      }
+    });
+  });
+
+  return (
+    <group ref={groupRef}>
+      {data.map((obj, i) => {
+        if (!clonedModels[i]) return null;
+        return (
+          <group key={i}>
+            <primitive
+              object={clonedModels[i]}
+              scale={[obj.scale, obj.scale, obj.scale]}
+            />
+          </group>
+        );
       })}
     </group>
   );
@@ -1363,6 +1401,7 @@ const Experience = ({
             />
           </group>
           <ChristmasElements state={sceneState} />
+          <ModelOrnaments state={sceneState} />
           <FairyLights state={sceneState} />
           <TopStar state={sceneState} />
         </Suspense>
